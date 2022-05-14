@@ -21,19 +21,10 @@ namespace Dalamud.Interface
 
         private readonly List<TitleScreenMenuEntry> entries = new();
 
-        /// <summary>
-        /// Gets the list of entries in the title screen menu.
-        /// </summary>
+        /// <inheritdoc cref="ITitleScreenMenu.Entries"/>
         public IReadOnlyList<TitleScreenMenuEntry> Entries => this.entries;
 
-        /// <summary>
-        /// Adds a new entry to the title screen menu.
-        /// </summary>
-        /// <param name="text">The text to show.</param>
-        /// <param name="texture">The texture to show.</param>
-        /// <param name="onTriggered">The action to execute when the option is selected.</param>
-        /// <returns>A <see cref="TitleScreenMenu"/> object that can be used to manage the entry.</returns>
-        /// <exception cref="ArgumentException">Thrown when the texture provided does not match the required resolution(64x64).</exception>
+        /// <inheritdoc cref="ITitleScreenMenu.AddEntry"/>
         public TitleScreenMenuEntry AddEntry(string text, TextureWrap texture, Action onTriggered)
         {
             if (texture.Height != TextureSize || texture.Width != TextureSize)
@@ -46,10 +37,7 @@ namespace Dalamud.Interface
             return entry;
         }
 
-        /// <summary>
-        /// Remove an entry from the title screen menu.
-        /// </summary>
-        /// <param name="entry">The entry to remove.</param>
+        /// <inheritdoc cref="ITitleScreenMenu.RemoveEntry"/>
         public void RemoveEntry(TitleScreenMenuEntry entry) => this.entries.Remove(entry);
 
         /// <summary>
