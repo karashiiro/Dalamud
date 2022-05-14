@@ -14,11 +14,11 @@ namespace Dalamud
     /// Only used internally within Dalamud, if plugins need access to things it should be _only_ via DI.
     /// </remarks>
     /// <typeparam name="T">The class you want to store in the service locator.</typeparam>
-    internal static class Service<T> where T : class
+    internal class Service<T> where T : class
     {
-        private static readonly ModuleLog Log = new("SVC");
+        protected static readonly ModuleLog Log = new("SVC");
 
-        private static T? instance;
+        protected static T? Instance;
 
         static Service()
         {
@@ -33,7 +33,7 @@ namespace Dalamud
         {
             SetInstanceObject(obj);
 
-            return instance!;
+            return Instance!;
         }
 
         /// <summary>
@@ -42,14 +42,14 @@ namespace Dalamud
         /// <returns>The set object.</returns>
         public static T Set()
         {
-            if (instance != null)
+            if (Instance != null)
                 throw new Exception($"Service {typeof(T).FullName} was set twice");
 
             var obj = (T?)Activator.CreateInstance(typeof(T), true);
 
             SetInstanceObject(obj);
 
-            return instance!;
+            return Instance!;
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Dalamud
         /// <exception cref="InvalidOperationException">Thrown when the object instance is not present in the service locator.</exception>
         public static T Get()
         {
-            return instance ?? throw new InvalidOperationException($"{typeof(T).FullName} has not been registered in the service locator!");
+            return Instance ?? throw new InvalidOperationException($"{typeof(T).FullName} has not been registered in the service locator!");
         }
 
         /// <summary>
@@ -88,14 +88,14 @@ namespace Dalamud
         /// <returns>The object if registered, null otherwise.</returns>
         public static T? GetNullable()
         {
-            return instance;
+            return Instance;
         }
 
-        private static void SetInstanceObject(T instance)
+        private static void SetInstanceObject(T inst)
         {
-            Service<T>.instance = instance ?? throw new ArgumentNullException(nameof(instance), $"Service locator received a null for type {typeof(T).FullName}");
+            Instance = inst ?? throw new ArgumentNullException(nameof(inst), $"Service locator received a null for type {typeof(T).FullName}");
 
-            var availableToPlugins = RegisterInIoCContainer(instance);
+            var availableToPlugins = RegisterInIoCContainer(inst);
 
             if (availableToPlugins)
                 Log.Information($"Registered {typeof(T).FullName} into service locator and exposed to plugins");
@@ -103,7 +103,7 @@ namespace Dalamud
                 Log.Information($"Registered {typeof(T).FullName} into service locator privately");
         }
 
-        private static bool RegisterInIoCContainer(T instance)
+        private static bool RegisterInIoCContainer(T inst)
         {
             var attr = typeof(T).GetCustomAttribute<PluginInterfaceAttribute>();
             if (attr == null)
@@ -117,7 +117,7 @@ namespace Dalamud
                 return false;
             }
 
-            ioc.RegisterSingleton(instance);
+            ioc.RegisterSingleton(inst);
 
             return true;
         }

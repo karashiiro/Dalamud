@@ -22,6 +22,7 @@ namespace Dalamud.IoC.Internal
         /// </summary>
         /// <param name="instance">The existing instance to register in the container.</param>
         /// <typeparam name="T">The interface to register.</typeparam>
+        /// <exception cref="ArgumentNullException">If the provided implementation instance is null.</exception>
         public void RegisterSingleton<T>(T instance)
         {
             if (instance == null)
@@ -30,6 +31,26 @@ namespace Dalamud.IoC.Internal
             }
 
             this.instances[typeof(T)] = new(instance);
+        }
+
+        /// <summary>
+        /// Register a singleton object of any type into the current IOC container using an additional interface type.
+        /// </summary>
+        /// <param name="instance">The existing instance to register in the container.</param>
+        /// <typeparam name="TInterface">The additional interface to register.</typeparam>
+        /// <typeparam name="TImplementation">The implementation to register for the interface.</typeparam>
+        /// <exception cref="ArgumentNullException">If the provided implementation instance is null.</exception>
+        public void RegisterSingleton<TInterface, TImplementation>(TImplementation instance)
+            where TInterface : class
+            where TImplementation : TInterface
+        {
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
+            this.instances[typeof(TInterface)] = new(instance);
+            this.instances[typeof(TImplementation)] = new(instance);
         }
 
         /// <summary>
@@ -49,11 +70,11 @@ namespace Dalamud.IoC.Internal
 
             // validate dependency versions (if they exist)
             var parameters = ctor.GetParameters().Select(p =>
-            {
-                var parameterType = p.ParameterType;
-                var requiredVersion = p.GetCustomAttribute(typeof(RequiredVersionAttribute)) as RequiredVersionAttribute;
-                return (parameterType, requiredVersion);
-            });
+                {
+                    var parameterType = p.ParameterType;
+                    var requiredVersion = p.GetCustomAttribute(typeof(RequiredVersionAttribute)) as RequiredVersionAttribute;
+                    return (parameterType, requiredVersion);
+                }).ToArray();
 
             var versionCheck = parameters.All(p => CheckInterfaceVersion(p.requiredVersion, p.parameterType));
 
