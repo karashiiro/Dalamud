@@ -21,7 +21,7 @@ namespace Dalamud.Game.Gui
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class ChatGui : IDisposable
+    public sealed class ChatGui : IDisposable, IChatGui
     {
         private readonly ChatGuiAddressResolver address;
 
@@ -97,39 +97,25 @@ namespace Dalamud.Game.Gui
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate void InteractableLinkClickedDelegate(IntPtr managerPtr, IntPtr messagePtr);
 
-        /// <summary>
-        /// Event that will be fired when a chat message is sent to chat by the game.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.ChatMessage"/>
         public event OnMessageDelegate ChatMessage;
 
-        /// <summary>
-        /// Event that allows you to stop messages from appearing in chat by setting the isHandled parameter to true.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.CheckMessageHandled"/>
         public event OnCheckMessageHandledDelegate CheckMessageHandled;
 
-        /// <summary>
-        /// Event that will be fired when a chat message is handled by Dalamud or a Plugin.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.ChatMessageHandled"/>
         public event OnMessageHandledDelegate ChatMessageHandled;
 
-        /// <summary>
-        /// Event that will be fired when a chat message is not handled by Dalamud or a Plugin.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.ChatMessageUnhandled"/>
         public event OnMessageUnhandledDelegate ChatMessageUnhandled;
 
-        /// <summary>
-        /// Gets the ID of the last linked item.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.LastLinkedItemId"/>
         public int LastLinkedItemId { get; private set; }
 
-        /// <summary>
-        /// Gets the flags of the last linked item.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.LastLinkedItemFlags"/>
         public byte LastLinkedItemFlags { get; private set; }
 
-        /// <summary>
-        /// Enables this module.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.Enable"/>
         public void Enable()
         {
             this.printMessageHook.Enable();
@@ -147,21 +133,13 @@ namespace Dalamud.Game.Gui
             this.interactableLinkClickedHook.Dispose();
         }
 
-        /// <summary>
-        /// Queue a chat message. While method is named as PrintChat, it only add a entry to the queue,
-        /// later to be processed when UpdateQueue() is called.
-        /// </summary>
-        /// <param name="chat">A message to send.</param>
+        /// <inheritdoc cref="IChatGui.PrintChat"/>
         public void PrintChat(XivChatEntry chat)
         {
             this.chatQueue.Enqueue(chat);
         }
 
-        /// <summary>
-        /// Queue a chat message. While method is named as PrintChat (it calls it internally), it only add a entry to the queue,
-        /// later to be processed when UpdateQueue() is called.
-        /// </summary>
-        /// <param name="message">A message to send.</param>
+        /// <inheritdoc cref="IChatGui.Print(string)"/>
         public void Print(string message)
         {
             var configuration = Service<DalamudConfiguration>.Get();
@@ -174,11 +152,7 @@ namespace Dalamud.Game.Gui
             });
         }
 
-        /// <summary>
-        /// Queue a chat message. While method is named as PrintChat (it calls it internally), it only add a entry to the queue,
-        /// later to be processed when UpdateQueue() is called.
-        /// </summary>
-        /// <param name="message">A message to send.</param>
+        /// <inheritdoc cref="IChatGui.Print(SeString)"/>
         public void Print(SeString message)
         {
             var configuration = Service<DalamudConfiguration>.Get();
@@ -191,11 +165,7 @@ namespace Dalamud.Game.Gui
             });
         }
 
-        /// <summary>
-        /// Queue an error chat message. While method is named as PrintChat (it calls it internally), it only add a entry to
-        /// the queue, later to be processed when UpdateQueue() is called.
-        /// </summary>
-        /// <param name="message">A message to send.</param>
+        /// <inheritdoc cref="IChatGui.PrintError(string)"/>
         public void PrintError(string message)
         {
             // Log.Verbose("[CHATGUI PRINT REGULAR ERROR]{0}", message);
@@ -206,11 +176,7 @@ namespace Dalamud.Game.Gui
             });
         }
 
-        /// <summary>
-        /// Queue an error chat message. While method is named as PrintChat (it calls it internally), it only add a entry to
-        /// the queue, later to be processed when UpdateQueue() is called.
-        /// </summary>
-        /// <param name="message">A message to send.</param>
+        /// <inheritdoc cref="IChatGui.PrintError(SeString)"/>
         public void PrintError(SeString message)
         {
             // Log.Verbose("[CHATGUI PRINT SESTRING ERROR]{0}", message.TextValue);
@@ -221,9 +187,7 @@ namespace Dalamud.Game.Gui
             });
         }
 
-        /// <summary>
-        /// Process a chat queue.
-        /// </summary>
+        /// <inheritdoc cref="IChatGui.UpdateQueue"/>
         public void UpdateQueue()
         {
             while (this.chatQueue.Count > 0)
