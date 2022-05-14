@@ -202,7 +202,7 @@ namespace Dalamud
                 Log.Information("[T2] SeString OK!");
 
                 // Initialize managers. Basically handlers for the logic
-                Service<CommandManager>.Set();
+                Service<ICommandManager, CommandManager>.Set();
 
                 Service<DalamudCommands>.Set().SetupCommands();
 

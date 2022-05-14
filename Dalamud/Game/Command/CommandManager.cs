@@ -17,7 +17,7 @@ namespace Dalamud.Game.Command
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class CommandManager
+    public sealed class CommandManager : ICommandManager
     {
         private readonly Dictionary<string, CommandInfo> commandMap = new();
         private readonly Regex commandRegexEn = new(@"^The command (?<command>.+) does not exist\.$", RegexOptions.Compiled);
@@ -46,16 +46,10 @@ namespace Dalamud.Game.Command
             Service<ChatGui>.Get().CheckMessageHandled += this.OnCheckMessageHandled;
         }
 
-        /// <summary>
-        /// Gets a read-only list of all registered commands.
-        /// </summary>
+        /// <inheritdoc cref="ICommandManager.Commands"/>
         public ReadOnlyDictionary<string, CommandInfo> Commands => new(this.commandMap);
 
-        /// <summary>
-        /// Process a command in full.
-        /// </summary>
-        /// <param name="content">The full command string.</param>
-        /// <returns>True if the command was found and dispatched.</returns>
+        /// <inheritdoc cref="ICommandManager.ProcessCommand"/>
         public bool ProcessCommand(string content)
         {
             string command;
@@ -98,12 +92,7 @@ namespace Dalamud.Game.Command
             return true;
         }
 
-        /// <summary>
-        /// Dispatch the handling of a command.
-        /// </summary>
-        /// <param name="command">The command to dispatch.</param>
-        /// <param name="argument">The provided arguments.</param>
-        /// <param name="info">A <see cref="CommandInfo"/> object describing this command.</param>
+        /// <inheritdoc cref="ICommandManager.DispatchCommand"/>
         public void DispatchCommand(string command, string argument, CommandInfo info)
         {
             try
@@ -116,12 +105,7 @@ namespace Dalamud.Game.Command
             }
         }
 
-        /// <summary>
-        /// Add a command handler, which you can use to add your own custom commands to the in-game chat.
-        /// </summary>
-        /// <param name="command">The command to register.</param>
-        /// <param name="info">A <see cref="CommandInfo"/> object describing the command.</param>
-        /// <returns>If adding was successful.</returns>
+        /// <inheritdoc cref="ICommandManager.AddHandler"/>
         public bool AddHandler(string command, CommandInfo info)
         {
             if (info == null)
@@ -139,11 +123,7 @@ namespace Dalamud.Game.Command
             }
         }
 
-        /// <summary>
-        /// Remove a command from the command handlers.
-        /// </summary>
-        /// <param name="command">The command to remove.</param>
-        /// <returns>If the removal was successful.</returns>
+        /// <inheritdoc cref="ICommandManager.RemoveHandler"/>
         public bool RemoveHandler(string command)
         {
             return this.commandMap.Remove(command);
