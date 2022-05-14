@@ -115,7 +115,7 @@ namespace Dalamud
                 Log.Information("[T1] TaskTracker OK!");
 #endif
                 Service<GameNetwork>.Set();
-                Service<GameGui>.Set();
+                Service<IGameGui, GameGui>.Set();
 
                 framework.Enable();
 

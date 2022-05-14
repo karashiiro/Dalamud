@@ -27,7 +27,7 @@ namespace Dalamud.Game.Gui
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed unsafe class GameGui : IDisposable
+    public sealed unsafe class GameGui : IDisposable, IGameGui
     {
         private readonly GameGuiAddressResolver address;
 
@@ -128,42 +128,25 @@ namespace Dalamud.Game.Gui
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate IntPtr ToggleUiHideDelegate(IntPtr thisPtr, byte unknownByte);
 
-        /// <summary>
-        /// Event which is fired when the game UI hiding is toggled.
-        /// </summary>
+        /// <inheritdoc cref="IGameGui.UiHideToggled"/>
         public event EventHandler<bool> UiHideToggled;
 
-        /// <summary>
-        /// Event that is fired when the currently hovered item changes.
-        /// </summary>
+        /// <inheritdoc cref="IGameGui.HoveredItemChanged"/>
         public event EventHandler<ulong> HoveredItemChanged;
 
-        /// <summary>
-        /// Event that is fired when the currently hovered action changes.
-        /// </summary>
+        /// <inheritdoc cref="IGameGui.HoveredActionChanged"/>
         public event EventHandler<HoveredAction> HoveredActionChanged;
 
-        /// <summary>
-        /// Gets a value indicating whether the game UI is hidden.
-        /// </summary>
+        /// <inheritdoc cref="IGameGui.HoveredActionChanged"/>
         public bool GameUiHidden { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the item ID that is currently hovered by the player. 0 when no item is hovered.
-        /// If > 1.000.000, subtract 1.000.000 and treat it as HQ.
-        /// </summary>
+        /// <inheritdoc cref="IGameGui.HoveredItem"/>
         public ulong HoveredItem { get; set; }
 
-        /// <summary>
-        /// Gets the action ID that is current hovered by the player. 0 when no action is hovered.
-        /// </summary>
-        public HoveredAction HoveredAction { get; } = new HoveredAction();
+        /// <inheritdoc cref="IGameGui.HoveredAction"/>
+        public HoveredAction HoveredAction { get; } = new();
 
-        /// <summary>
-        /// Opens the in-game map with a flag on the location of the parameter.
-        /// </summary>
-        /// <param name="mapLink">Link to the map to be opened.</param>
-        /// <returns>True if there were no errors and it could open the map.</returns>
+        /// <inheritdoc cref="IGameGui.OpenMapWithMapLink"/>
         public bool OpenMapWithMapLink(MapLinkPayload mapLink)
         {
             var uiModule = this.GetUIModule();
@@ -193,12 +176,7 @@ namespace Dalamud.Game.Gui
             return this.openMapWithFlag(uiMapObjectPtr, mapLinkString);
         }
 
-        /// <summary>
-        /// Converts in-world coordinates to screen coordinates (upper left corner origin).
-        /// </summary>
-        /// <param name="worldPos">Coordinates in the world.</param>
-        /// <param name="screenPos">Converted coordinates.</param>
-        /// <returns>True if worldPos corresponds to a position in front of the camera.</returns>
+        /// <inheritdoc cref="IGameGui.WorldToScreen"/>
         public bool WorldToScreen(Vector3 worldPos, out Vector2 screenPos)
         {
             // Get base object with matrices
@@ -233,13 +211,7 @@ namespace Dalamud.Game.Gui
                    screenPos.Y > windowPos.Y && screenPos.Y < windowPos.Y + height;
         }
 
-        /// <summary>
-        /// Converts screen coordinates to in-world coordinates via raycasting.
-        /// </summary>
-        /// <param name="screenPos">Screen coordinates.</param>
-        /// <param name="worldPos">Converted coordinates.</param>
-        /// <param name="rayDistance">How far to search for a collision.</param>
-        /// <returns>True if successful. On false, worldPos's contents are undefined.</returns>
+        /// <inheritdoc cref="IGameGui.ScreenToWorld"/>
         public bool ScreenToWorld(Vector2 screenPos, out Vector3 worldPos, float rayDistance = 100000.0f)
         {
             // The game is only visible in the main viewport, so if the cursor is outside
@@ -325,11 +297,8 @@ namespace Dalamud.Game.Gui
             return isSuccess;
         }
 
-        /// <summary>
-        /// Gets a pointer to the game's UI module.
-        /// </summary>
-        /// <returns>IntPtr pointing to UI module.</returns>
-        public unsafe IntPtr GetUIModule()
+        /// <inheritdoc cref="IGameGui.GetUIModule"/>
+        public IntPtr GetUIModule()
         {
             var framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
             if (framework == null)
@@ -342,13 +311,8 @@ namespace Dalamud.Game.Gui
             return (IntPtr)uiModule;
         }
 
-        /// <summary>
-        /// Gets the pointer to the Addon with the given name and index.
-        /// </summary>
-        /// <param name="name">Name of addon to find.</param>
-        /// <param name="index">Index of addon to find (1-indexed).</param>
-        /// <returns>IntPtr.Zero if unable to find UI, otherwise IntPtr pointing to the start of the addon.</returns>
-        public unsafe IntPtr GetAddonByName(string name, int index)
+        /// <inheritdoc cref="IGameGui.GetAddonByName"/>
+        public IntPtr GetAddonByName(string name, int index)
         {
             var atkStage = FFXIVClientStructs.FFXIV.Component.GUI.AtkStage.GetSingleton();
             if (atkStage == null)
@@ -365,30 +329,18 @@ namespace Dalamud.Game.Gui
             return (IntPtr)addon;
         }
 
-        /// <summary>
-        /// Find the agent associated with an addon, if possible.
-        /// </summary>
-        /// <param name="addonName">The addon name.</param>
-        /// <returns>A pointer to the agent interface.</returns>
+        /// <inheritdoc cref="IGameGui.FindAgentInterface(string)"/>
         public IntPtr FindAgentInterface(string addonName)
         {
             var addon = this.GetAddonByName(addonName, 1);
             return this.FindAgentInterface(addon);
         }
 
-        /// <summary>
-        /// Find the agent associated with an addon, if possible.
-        /// </summary>
-        /// <param name="addon">The addon address.</param>
-        /// <returns>A pointer to the agent interface.</returns>
-        public unsafe IntPtr FindAgentInterface(void* addon) => this.FindAgentInterface((IntPtr)addon);
+        /// <inheritdoc cref="IGameGui.FindAgentInterface(System.Void*)"/>
+        public IntPtr FindAgentInterface(void* addon) => this.FindAgentInterface((IntPtr)addon);
 
-        /// <summary>
-        /// Find the agent associated with an addon, if possible.
-        /// </summary>
-        /// <param name="addonPtr">The addon address.</param>
-        /// <returns>A pointer to the agent interface.</returns>
-        public unsafe IntPtr FindAgentInterface(IntPtr addonPtr)
+        /// <inheritdoc cref="IGameGui.FindAgentInterface(IntPtr)"/>
+        public IntPtr FindAgentInterface(IntPtr addonPtr)
         {
             if (addonPtr == IntPtr.Zero)
                 return IntPtr.Zero;
@@ -421,15 +373,10 @@ namespace Dalamud.Game.Gui
             return IntPtr.Zero;
         }
 
-        /// <summary>
-        /// Set the current background music.
-        /// </summary>
-        /// <param name="bgmKey">The background music key.</param>
+        /// <inheritdoc cref="IGameGui.SetBgm"/>
         public void SetBgm(ushort bgmKey) => this.setGlobalBgmHook.Original(bgmKey, 0, 0, 0, 0, 0);
 
-        /// <summary>
-        /// Enables the hooks and submodules of this module.
-        /// </summary>
+        /// <inheritdoc cref="IGameGui.Enable"/>
         public void Enable()
         {
             Service<ChatGui>.Get().Enable();
