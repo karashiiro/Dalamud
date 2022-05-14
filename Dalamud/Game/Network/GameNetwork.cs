@@ -14,7 +14,7 @@ namespace Dalamud.Game.Network
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class GameNetwork : IDisposable
+    public sealed class GameNetwork : IDisposable, IGameNetwork
     {
         private readonly GameNetworkAddressResolver address;
         private readonly Hook<ProcessZonePacketDownDelegate> processZonePacketDownHook;
@@ -55,14 +55,10 @@ namespace Dalamud.Game.Network
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate byte ProcessZonePacketUpDelegate(IntPtr a1, IntPtr dataPtr, IntPtr a3, byte a4);
 
-        /// <summary>
-        /// Event that is called when a network message is sent/received.
-        /// </summary>
+        /// <inheritdoc cref="IGameNetwork.NetworkMessage"/>
         public event OnNetworkMessageDelegate NetworkMessage;
 
-        /// <summary>
-        /// Enable this module.
-        /// </summary>
+        /// <inheritdoc cref="IGameNetwork.Enable"/>
         public void Enable()
         {
             this.processZonePacketDownHook.Enable();
