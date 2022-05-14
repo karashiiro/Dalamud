@@ -334,7 +334,10 @@ internal class LocalPlugin : IDisposable
             this.DalamudInterface = new DalamudPluginInterface(this.pluginAssembly.GetName().Name!, this.DllFile, reason, this.IsDev);
 
             var ioc = Service<ServiceContainer>.Get();
-            this.instance = ioc.Create(this.pluginType, this.DalamudInterface) as IDalamudPlugin;
+            this.instance = ioc.Create(
+                                this.pluginType,
+                                this.DalamudInterface,
+                                this.DalamudInterface as IDalamudPluginInterface) as IDalamudPlugin;
             if (this.instance == null)
             {
                 this.State = PluginState.LoadError;
