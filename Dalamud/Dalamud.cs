@@ -239,7 +239,7 @@ namespace Dalamud
             {
                 Log.Information("[T3] START!");
 
-                Service<TitleScreenMenu>.Set();
+                Service<ITitleScreenMenu, TitleScreenMenu>.Set();
 
                 var pluginManager = Service<PluginManager>.Set();
                 Service<CallGate>.Set();

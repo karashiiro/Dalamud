@@ -12,7 +12,7 @@ namespace Dalamud.Interface
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public class TitleScreenMenu
+    public class TitleScreenMenu : ITitleScreenMenu
     {
         /// <summary>
         /// Gets the texture size needed for title screen menu logos.
