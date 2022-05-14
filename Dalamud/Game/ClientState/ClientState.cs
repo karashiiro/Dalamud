@@ -48,7 +48,7 @@ namespace Dalamud.Game.ClientState
 
             this.ClientLanguage = Service<DalamudStartInfo>.Get().Language;
 
-            Service<ObjectTable>.Set(this.address);
+            Service<IObjectTable, ObjectTable>.Set(this.address);
 
             Service<FateTable>.Set(this.address);
 
