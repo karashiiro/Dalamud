@@ -63,7 +63,7 @@ namespace Dalamud.Game.Gui
             Log.Verbose($"HandleImm address 0x{this.address.HandleImm.ToInt64():X}");
 
             Service<IChatGui, ChatGui>.Set(new ChatGui(this.address.ChatManager));
-            Service<PartyFinderGui>.Set();
+            Service<IPartyFinderGui, PartyFinderGui>.Set();
             Service<ToastGui>.Set();
             Service<FlyTextGui>.Set();
             Service<ContextMenu>.Set();

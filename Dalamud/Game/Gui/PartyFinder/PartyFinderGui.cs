@@ -15,7 +15,7 @@ namespace Dalamud.Game.Gui.PartyFinder
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class PartyFinderGui : IDisposable
+    public sealed class PartyFinderGui : IDisposable, IPartyFinderGui
     {
         private readonly PartyFinderAddressResolver address;
         private readonly IntPtr memory;
@@ -46,15 +46,10 @@ namespace Dalamud.Game.Gui.PartyFinder
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate void ReceiveListingDelegate(IntPtr managerPtr, IntPtr data);
 
-        /// <summary>
-        /// Event fired each time the game receives an individual Party Finder listing.
-        /// Cannot modify listings but can hide them.
-        /// </summary>
+        /// <inheritdoc cref="IPartyFinderGui.ReceiveListing"/>
         public event PartyFinderListingEventDelegate ReceiveListing;
 
-        /// <summary>
-        /// Enables this module.
-        /// </summary>
+        /// <inheritdoc cref="IPartyFinderGui.Enable"/>
         public void Enable()
         {
             this.receiveListingHook.Enable();
