@@ -24,7 +24,7 @@ namespace Dalamud.Game.Gui.ContextMenus
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class ContextMenu : IDisposable
+    public sealed class ContextMenu : IDisposable, IContextMenu
     {
         private const int MaxContextMenuItemsPerContextMenu = 32;
 
@@ -81,9 +81,7 @@ namespace Dalamud.Game.Gui.ContextMenus
 
         #endregion
 
-        /// <summary>
-        /// Occurs when a context menu is opened by the game.
-        /// </summary>
+        /// <inheritdoc cref="IContextMenu.ContextMenuOpened"/>
         public event ContextMenus.ContextMenuOpenedDelegate? ContextMenuOpened;
 
         private ContextMenuAddressResolver Address { get; set; }
