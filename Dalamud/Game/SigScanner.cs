@@ -16,7 +16,7 @@ namespace Dalamud.Game
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class SigScanner : IDisposable
+    public sealed class SigScanner : IDisposable, ISigScanner
     {
         private IntPtr moduleCopyPtr;
         private long moduleCopyOffset;
@@ -51,80 +51,48 @@ namespace Dalamud.Game
             Log.Verbose($"Module size: 0x{this.TextSectionSize:X}");
         }
 
-        /// <summary>
-        /// Gets a value indicating whether or not the search on this module is performed on a copy.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.IsCopy"/>
         public bool IsCopy { get; }
 
-        /// <summary>
-        /// Gets a value indicating whether or not the ProcessModule is 32-bit.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.Is32BitProcess"/>
         public bool Is32BitProcess { get; }
 
-        /// <summary>
-        /// Gets the base address of the search area. When copied, this will be the address of the copy.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.SearchBase"/>
         public IntPtr SearchBase => this.IsCopy ? this.moduleCopyPtr : this.Module.BaseAddress;
 
-        /// <summary>
-        /// Gets the base address of the .text section search area.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.TextSectionBase"/>
         public IntPtr TextSectionBase => new(this.SearchBase.ToInt64() + this.TextSectionOffset);
 
-        /// <summary>
-        /// Gets the offset of the .text section from the base of the module.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.TextSectionOffset"/>
         public long TextSectionOffset { get; private set; }
 
-        /// <summary>
-        /// Gets the size of the text section.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.TextSectionSize"/>
         public int TextSectionSize { get; private set; }
 
-        /// <summary>
-        /// Gets the base address of the .data section search area.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.DataSectionBase"/>
         public IntPtr DataSectionBase => new(this.SearchBase.ToInt64() + this.DataSectionOffset);
 
-        /// <summary>
-        /// Gets the offset of the .data section from the base of the module.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.DataSectionOffset"/>
         public long DataSectionOffset { get; private set; }
 
-        /// <summary>
-        /// Gets the size of the .data section.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.DataSectionSize"/>
         public int DataSectionSize { get; private set; }
 
-        /// <summary>
-        /// Gets the base address of the .rdata section search area.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.RDataSectionBase"/>
         public IntPtr RDataSectionBase => new(this.SearchBase.ToInt64() + this.RDataSectionOffset);
 
-        /// <summary>
-        /// Gets the offset of the .rdata section from the base of the module.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.RDataSectionOffset"/>
         public long RDataSectionOffset { get; private set; }
 
-        /// <summary>
-        /// Gets the size of the .rdata section.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.RDataSectionSize"/>
         public int RDataSectionSize { get; private set; }
 
-        /// <summary>
-        /// Gets the ProcessModule on which the search is performed.
-        /// </summary>
+        /// <inheritdoc cref="ISigScanner.Module"/>
         public ProcessModule Module { get; }
 
         private IntPtr TextSectionTop => this.TextSectionBase + this.TextSectionSize;
 
-        /// <summary>
-        /// Scan memory for a signature.
-        /// </summary>
-        /// <param name="baseAddress">The base address to scan from.</param>
-        /// <param name="size">The amount of bytes to scan.</param>
-        /// <param name="signature">The signature to search for.</param>
-        /// <returns>The found offset.</returns>
+        /// <inheritdoc cref="ISigScanner.Scan"/>
         public static IntPtr Scan(IntPtr baseAddress, int size, string signature)
         {
             var (needle, mask) = ParseSignature(signature);
@@ -134,14 +102,7 @@ namespace Dalamud.Game
             return baseAddress + index;
         }
 
-        /// <summary>
-        /// Try scanning memory for a signature.
-        /// </summary>
-        /// <param name="baseAddress">The base address to scan from.</param>
-        /// <param name="size">The amount of bytes to scan.</param>
-        /// <param name="signature">The signature to search for.</param>
-        /// <param name="result">The offset, if found.</param>
-        /// <returns>true if the signature was found.</returns>
+        /// <inheritdoc cref="ISigScanner.TryScan"/>
         public static bool TryScan(IntPtr baseAddress, int size, string signature, out IntPtr result)
         {
             try
@@ -156,14 +117,7 @@ namespace Dalamud.Game
             }
         }
 
-        /// <summary>
-        /// Scan for a .data address using a .text function.
-        /// This is intended to be used with IDA sigs.
-        /// Place your cursor on the line calling a static address, and create and IDA sig.
-        /// </summary>
-        /// <param name="signature">The signature of the function using the data.</param>
-        /// <param name="offset">The offset from function start of the instruction using the data.</param>
-        /// <returns>An IntPtr to the static memory location.</returns>
+        /// <inheritdoc cref="ISigScanner.GetStaticAddressFromSig"/>
         public IntPtr GetStaticAddressFromSig(string signature, int offset = 0)
         {
             var instrAddr = this.ScanText(signature);
@@ -182,15 +136,7 @@ namespace Dalamud.Game
             return IntPtr.Add(instrAddr, Marshal.ReadInt32(instrAddr) + 4);
         }
 
-        /// <summary>
-        /// Try scanning for a .data address using a .text function.
-        /// This is intended to be used with IDA sigs.
-        /// Place your cursor on the line calling a static address, and create and IDA sig.
-        /// </summary>
-        /// <param name="signature">The signature of the function using the data.</param>
-        /// <param name="result">An IntPtr to the static memory location, if found.</param>
-        /// <param name="offset">The offset from function start of the instruction using the data.</param>
-        /// <returns>true if the signature was found.</returns>
+        /// <inheritdoc cref="ISigScanner.TryGetStaticAddressFromSig"/>
         public bool TryGetStaticAddressFromSig(string signature, out IntPtr result, int offset = 0)
         {
             try
@@ -205,11 +151,7 @@ namespace Dalamud.Game
             }
         }
 
-        /// <summary>
-        /// Scan for a byte signature in the .data section.
-        /// </summary>
-        /// <param name="signature">The signature.</param>
-        /// <returns>The real offset of the found signature.</returns>
+        /// <inheritdoc cref="ISigScanner.ScanData"/>
         public IntPtr ScanData(string signature)
         {
             var scanRet = Scan(this.DataSectionBase, this.DataSectionSize, signature);
@@ -220,12 +162,7 @@ namespace Dalamud.Game
             return scanRet;
         }
 
-        /// <summary>
-        /// Try scanning for a byte signature in the .data section.
-        /// </summary>
-        /// <param name="signature">The signature.</param>
-        /// <param name="result">The real offset of the signature, if found.</param>
-        /// <returns>true if the signature was found.</returns>
+        /// <inheritdoc cref="ISigScanner.TryScanData"/>
         public bool TryScanData(string signature, out IntPtr result)
         {
             try
@@ -240,11 +177,7 @@ namespace Dalamud.Game
             }
         }
 
-        /// <summary>
-        /// Scan for a byte signature in the whole module search area.
-        /// </summary>
-        /// <param name="signature">The signature.</param>
-        /// <returns>The real offset of the found signature.</returns>
+        /// <inheritdoc cref="ISigScanner.ScanModule"/>
         public IntPtr ScanModule(string signature)
         {
             var scanRet = Scan(this.SearchBase, this.Module.ModuleMemorySize, signature);
@@ -255,12 +188,7 @@ namespace Dalamud.Game
             return scanRet;
         }
 
-        /// <summary>
-        /// Try scanning for a byte signature in the whole module search area.
-        /// </summary>
-        /// <param name="signature">The signature.</param>
-        /// <param name="result">The real offset of the signature, if found.</param>
-        /// <returns>true if the signature was found.</returns>
+        /// <inheritdoc cref="ISigScanner.TryScanModule"/>
         public bool TryScanModule(string signature, out IntPtr result)
         {
             try
@@ -275,23 +203,14 @@ namespace Dalamud.Game
             }
         }
 
-        /// <summary>
-        /// Resolve a RVA address.
-        /// </summary>
-        /// <param name="nextInstAddr">The address of the next instruction.</param>
-        /// <param name="relOffset">The relative offset.</param>
-        /// <returns>The calculated offset.</returns>
+        /// <inheritdoc cref="ISigScanner.ResolveRelativeAddress"/>
         public IntPtr ResolveRelativeAddress(IntPtr nextInstAddr, int relOffset)
         {
             if (this.Is32BitProcess) throw new NotSupportedException("32 bit is not supported.");
             return nextInstAddr + relOffset;
         }
 
-        /// <summary>
-        /// Scan for a byte signature in the .text section.
-        /// </summary>
-        /// <param name="signature">The signature.</param>
-        /// <returns>The real offset of the found signature.</returns>
+        /// <inheritdoc cref="ISigScanner.ScanText"/>
         public IntPtr ScanText(string signature)
         {
             var mBase = this.IsCopy ? this.moduleCopyPtr : this.TextSectionBase;
@@ -309,12 +228,7 @@ namespace Dalamud.Game
             return scanRet;
         }
 
-        /// <summary>
-        /// Try scanning for a byte signature in the .text section.
-        /// </summary>
-        /// <param name="signature">The signature.</param>
-        /// <param name="result">The real offset of the signature, if found.</param>
-        /// <returns>true if the signature was found.</returns>
+        /// <inheritdoc cref="ISigScanner.TryScanText"/>
         public bool TryScanText(string signature, out IntPtr result)
         {
             try

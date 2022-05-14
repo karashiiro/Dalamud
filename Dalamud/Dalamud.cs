@@ -99,7 +99,7 @@ namespace Dalamud
                 Service<ServiceContainer>.Set();
 
                 // Initialize the process information.
-                Service<SigScanner>.Set(new SigScanner(true));
+                Service<ISigScanner, SigScanner>.Set(new SigScanner(true));
                 Service<HookManager>.Set();
 
                 // Initialize FFXIVClientStructs function resolver
