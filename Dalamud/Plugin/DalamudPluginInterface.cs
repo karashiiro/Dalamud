@@ -17,7 +17,6 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Plugin.Internal;
 using Dalamud.Plugin.Ipc;
-using Dalamud.Plugin.Ipc.Exceptions;
 using Dalamud.Plugin.Ipc.Internal;
 using Dalamud.Utility;
 
@@ -26,7 +25,7 @@ namespace Dalamud.Plugin
     /// <summary>
     /// This class acts as an interface to various objects needed to interact with Dalamud and the game.
     /// </summary>
-    public sealed class DalamudPluginInterface : IDisposable
+    public sealed class DalamudPluginInterface : IDisposable, IDalamudPluginInterface
     {
         private readonly string pluginName;
         private readonly PluginConfigurations configs;
@@ -81,173 +80,128 @@ namespace Dalamud.Plugin
         /// <param name="langCode">The new language code.</param>
         public delegate void LanguageChangedDelegate(string langCode);
 
-        /// <summary>
-        /// Event that gets fired when loc is changed
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.LanguageChanged"/>
         public event LanguageChangedDelegate LanguageChanged;
 
-        /// <summary>
-        /// Gets the reason this plugin was loaded.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.Reason"/>
         public PluginLoadReason Reason { get; }
 
-        /// <summary>
-        /// Gets a value indicating whether this is a dev plugin.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.IsDev"/>
         public bool IsDev { get; }
 
-        /// <summary>
-        /// Gets the time that this plugin was loaded.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.LoadTime"/>
         public DateTime LoadTime { get; }
 
-        /// <summary>
-        /// Gets the UTC time that this plugin was loaded.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.LoadTimeUTC"/>
         public DateTime LoadTimeUTC { get; }
 
-        /// <summary>
-        /// Gets the timespan delta from when this plugin was loaded.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.LoadTimeDelta"/>
         public TimeSpan LoadTimeDelta => DateTime.Now - this.LoadTime;
 
-        /// <summary>
-        /// Gets the directory Dalamud assets are stored in.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.DalamudAssetDirectory"/>
         public DirectoryInfo DalamudAssetDirectory => Service<Dalamud>.Get().AssetDirectory;
 
-        /// <summary>
-        /// Gets the location of your plugin assembly.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.AssemblyLocation"/>
         public FileInfo AssemblyLocation { get; }
 
-        /// <summary>
-        /// Gets the directory your plugin configurations are stored in.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.ConfigDirectory"/>
         public DirectoryInfo ConfigDirectory => new(this.GetPluginConfigDirectory());
 
-        /// <summary>
-        /// Gets the config file of your plugin.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.ConfigFile"/>
         public FileInfo ConfigFile => this.configs.GetConfigFile(this.pluginName);
 
-        /// <summary>
-        /// Gets the <see cref="UiBuilder"/> instance which allows you to draw UI into the game via ImGui draw calls.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.UiBuilder"/>
         public UiBuilder UiBuilder { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether Dalamud is running in Debug mode or the /xldev menu is open. This can occur on release builds.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.IsDebugging"/>
         public bool IsDebugging => Debugger.IsAttached;
 
-        /// <summary>
-        /// Gets the current UI language in two-letter iso format.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.UiLanguage"/>
         public string UiLanguage { get; private set; }
 
-        /// <summary>
-        /// Gets serializer class with functions to remove special characters from strings.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.Sanitizer"/>
         public ISanitizer Sanitizer { get; }
 
-        /// <summary>
-        /// Gets the chat type used by default for plugin messages.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.GeneralChatType"/>
         public XivChatType GeneralChatType { get; private set; }
 
-        /// <summary>
-        /// Gets a list of installed plugin names.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.PluginNames"/>
         public List<string> PluginNames => Service<PluginManager>.Get().InstalledPlugins.Select(p => p.Manifest.Name).ToList();
 
-        /// <summary>
-        /// Gets a list of installed plugin internal names.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.PluginInternalNames"/>
         public List<string> PluginInternalNames => Service<PluginManager>.Get().InstalledPlugins.Select(p => p.Manifest.InternalName).ToList();
 
         #region IPC
 
-        /// <summary>
-        /// Gets an IPC provider.
-        /// </summary>
-        /// <typeparam name="TRet">The return type for funcs. Use object if this is unused.</typeparam>
-        /// <param name="name">The name of the IPC registration.</param>
-        /// <returns>An IPC provider.</returns>
-        /// <exception cref="IpcTypeMismatchError">This is thrown when the requested types do not match the previously registered types are different.</exception>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<TRet> GetIpcProvider<TRet>(string name)
             => new CallGatePubSub<TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, TRet> GetIpcProvider<T1, TRet>(string name)
             => new CallGatePubSub<T1, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, TRet> GetIpcProvider<T1, T2, TRet>(string name)
             => new CallGatePubSub<T1, T2, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, T3, TRet> GetIpcProvider<T1, T2, T3, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, T3, T4, TRet> GetIpcProvider<T1, T2, T3, T4, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, T3, T4, T5, TRet> GetIpcProvider<T1, T2, T3, T4, T5, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, T3, T4, T5, T6, TRet> GetIpcProvider<T1, T2, T3, T4, T5, T6, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, T6, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, T3, T4, T5, T6, T7, TRet> GetIpcProvider<T1, T2, T3, T4, T5, T6, T7, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, T6, T7, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateProvider{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcProvider{TRet}"/>
         public ICallGateProvider<T1, T2, T3, T4, T5, T6, T7, T8, TRet> GetIpcProvider<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(name);
 
-        /// <summary>
-        /// Gets an IPC subscriber.
-        /// </summary>
-        /// <typeparam name="TRet">The return type for funcs. Use object if this is unused.</typeparam>
-        /// <param name="name">The name of the IPC registration.</param>
-        /// <returns>An IPC subscriber.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<TRet> GetIpcSubscriber<TRet>(string name)
             => new CallGatePubSub<TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, TRet> GetIpcSubscriber<T1, TRet>(string name)
             => new CallGatePubSub<T1, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, TRet> GetIpcSubscriber<T1, T2, TRet>(string name)
             => new CallGatePubSub<T1, T2, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, T3, TRet> GetIpcSubscriber<T1, T2, T3, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, T3, T4, TRet> GetIpcSubscriber<T1, T2, T3, T4, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, T3, T4, T5, TRet> GetIpcSubscriber<T1, T2, T3, T4, T5, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, T3, T4, T5, T6, TRet> GetIpcSubscriber<T1, T2, T3, T4, T5, T6, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, T6, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, T3, T4, T5, T6, T7, TRet> GetIpcSubscriber<T1, T2, T3, T4, T5, T6, T7, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, T6, T7, TRet>(name);
 
-        /// <inheritdoc cref="ICallGateSubscriber{TRet}"/>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetIpcSubscriber{TRet}"/>
         public ICallGateSubscriber<T1, T2, T3, T4, T5, T6, T7, T8, TRet> GetIpcSubscriber<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(string name)
             => new CallGatePubSub<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(name);
 
@@ -255,10 +209,7 @@ namespace Dalamud.Plugin
 
         #region Configuration
 
-        /// <summary>
-        /// Save a plugin configuration(inheriting IPluginConfiguration).
-        /// </summary>
-        /// <param name="currentConfig">The current configuration.</param>
+        /// <inheritdoc cref="IDalamudPluginInterface.SavePluginConfig"/>
         public void SavePluginConfig(IPluginConfiguration? currentConfig)
         {
             if (currentConfig == null)
@@ -267,10 +218,7 @@ namespace Dalamud.Plugin
             this.configs.Save(currentConfig, this.pluginName);
         }
 
-        /// <summary>
-        /// Get a previously saved plugin configuration or null if none was saved before.
-        /// </summary>
-        /// <returns>A previously saved config or null if none was saved before.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetPluginConfig"/>
         public IPluginConfiguration? GetPluginConfig()
         {
             // This is done to support json deserialization of plugin configurations
@@ -294,45 +242,29 @@ namespace Dalamud.Plugin
             return this.configs.Load(this.pluginName);
         }
 
-        /// <summary>
-        /// Get the config directory.
-        /// </summary>
-        /// <returns>directory with path of AppData/XIVLauncher/pluginConfig/PluginInternalName.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetPluginConfigDirectory"/>
         public string GetPluginConfigDirectory() => this.configs.GetDirectory(this.pluginName);
 
-        /// <summary>
-        /// Get the loc directory.
-        /// </summary>
-        /// <returns>directory with path of AppData/XIVLauncher/pluginConfig/PluginInternalName/loc.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.GetPluginLocDirectory"/>
         public string GetPluginLocDirectory() => this.configs.GetDirectory(Path.Combine(this.pluginName, "loc"));
 
         #endregion
 
         #region Chat Links
 
-        /// <summary>
-        /// Register a chat link handler.
-        /// </summary>
-        /// <param name="commandId">The ID of the command.</param>
-        /// <param name="commandAction">The action to be executed.</param>
-        /// <returns>Returns an SeString payload for the link.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.AddChatLinkHandler"/>
         public DalamudLinkPayload AddChatLinkHandler(uint commandId, Action<uint, SeString> commandAction)
         {
             return Service<ChatGui>.Get().AddChatLinkHandler(this.pluginName, commandId, commandAction);
         }
 
-        /// <summary>
-        /// Remove a chat link handler.
-        /// </summary>
-        /// <param name="commandId">The ID of the command.</param>
+        /// <inheritdoc cref="IDalamudPluginInterface.RemoveChatLinkHandler(uint)"/>
         public void RemoveChatLinkHandler(uint commandId)
         {
             Service<ChatGui>.Get().RemoveChatLinkHandler(this.pluginName, commandId);
         }
 
-        /// <summary>
-        /// Removes all chat link handlers registered by the plugin.
-        /// </summary>
+        /// <inheritdoc cref="IDalamudPluginInterface.RemoveChatLinkHandler()"/>
         public void RemoveChatLinkHandler()
         {
             Service<ChatGui>.Get().RemoveChatLinkHandler(this.pluginName);
@@ -341,12 +273,7 @@ namespace Dalamud.Plugin
 
         #region Dependency Injection
 
-        /// <summary>
-        /// Create a new object of the provided type using its default constructor, then inject objects and properties.
-        /// </summary>
-        /// <param name="scopedObjects">Objects to inject additionally.</param>
-        /// <typeparam name="T">The type to create.</typeparam>
-        /// <returns>The created and initialized type.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.Create{T}"/>
         public T? Create<T>(params object[] scopedObjects) where T : class
         {
             var svcContainer = Service<IoC.Internal.ServiceContainer>.Get();
@@ -358,12 +285,7 @@ namespace Dalamud.Plugin
             return svcContainer.Create(typeof(T), realScopedObjects) as T;
         }
 
-        /// <summary>
-        /// Inject services into properties on the provided object instance.
-        /// </summary>
-        /// <param name="instance">The instance to inject services into.</param>
-        /// <param name="scopedObjects">Objects to inject additionally.</param>
-        /// <returns>Whether or not the injection succeeded.</returns>
+        /// <inheritdoc cref="IDalamudPluginInterface.Inject"/>
         public bool Inject(object instance, params object[] scopedObjects)
         {
             var svcContainer = Service<IoC.Internal.ServiceContainer>.Get();
