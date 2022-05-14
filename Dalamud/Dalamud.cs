@@ -208,7 +208,7 @@ namespace Dalamud
 
                 Log.Information("[T2] CM OK!");
 
-                Service<ChatHandlers>.Set();
+                Service<IChatHandlers, ChatHandlers>.Set();
 
                 Log.Information("[T2] CH OK!");
 

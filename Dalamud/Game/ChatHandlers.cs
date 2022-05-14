@@ -28,7 +28,7 @@ namespace Dalamud.Game
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public class ChatHandlers
+    public class ChatHandlers : IChatHandlers
     {
         // private static readonly Dictionary<string, string> UnicodeToDiscordEmojiDict = new()
         // {
@@ -125,9 +125,7 @@ namespace Dalamud.Game
             });
         }
 
-        /// <summary>
-        /// Gets the last URL seen in chat.
-        /// </summary>
+        /// <inheritdoc cref="IChatHandlers.LastLink"/>
         public string? LastLink { get; private set; }
 
         /// <summary>
