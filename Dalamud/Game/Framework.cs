@@ -24,7 +24,7 @@ namespace Dalamud.Game
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class Framework : IDisposable
+    public sealed class Framework : IDisposable, IFramework
     {
         private static Stopwatch statsStopwatch = new();
 
@@ -83,9 +83,7 @@ namespace Dalamud.Game
 
         private delegate IntPtr OnDestroyDetour(); // OnDestroyDelegate
 
-        /// <summary>
-        /// Event that gets fired every time the game framework updates.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.Update"/>
         public event OnUpdateDelegate Update;
 
         /// <summary>
@@ -98,29 +96,19 @@ namespace Dalamud.Game
         /// </summary>
         public static Dictionary<string, List<double>> StatsHistory { get; } = new();
 
-        /// <summary>
-        /// Gets a raw pointer to the instance of Client::Framework.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.Address"/>
         public FrameworkAddressResolver Address { get; }
 
-        /// <summary>
-        /// Gets the last time that the Framework Update event was triggered.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.LastUpdate"/>
         public DateTime LastUpdate { get; private set; } = DateTime.MinValue;
 
-        /// <summary>
-        /// Gets the last time in UTC that the Framework Update event was triggered.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.LastUpdateUTC"/>
         public DateTime LastUpdateUTC { get; private set; } = DateTime.MinValue;
 
-        /// <summary>
-        /// Gets the delta between the last Framework Update and the currently executing one.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.UpdateDelta"/>
         public TimeSpan UpdateDelta { get; private set; } = TimeSpan.Zero;
 
-        /// <summary>
-        /// Gets a value indicating whether currently executing code is running in the game's framework update thread.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.IsInFrameworkUpdateThread"/>
         public bool IsInFrameworkUpdateThread => Thread.CurrentThread == this.frameworkUpdateThread;
 
         /// <summary>
@@ -128,9 +116,7 @@ namespace Dalamud.Game
         /// </summary>
         internal bool DispatchUpdateEvents { get; set; } = true;
 
-        /// <summary>
-        /// Enable this module.
-        /// </summary>
+        /// <inheritdoc cref="IFramework.Enable"/>
         public void Enable()
         {
             Service<LibcFunction>.Set();
@@ -142,19 +128,10 @@ namespace Dalamud.Game
             this.realDestroyHook.Enable();
         }
 
-        /// <summary>
-        /// Run given function right away if this function has been called from game's Framework.Update thread, or otherwise run on next Framework.Update call.
-        /// </summary>
-        /// <typeparam name="T">Return type.</typeparam>
-        /// <param name="func">Function to call.</param>
-        /// <returns>Task representing the pending or already completed function.</returns>
+        /// <inheritdoc cref="IFramework.RunOnFrameworkThread{T}(Func{T})"/>
         public Task<T> RunOnFrameworkThread<T>(Func<T> func) => this.IsInFrameworkUpdateThread ? Task.FromResult(func()) : this.RunOnTick(func);
 
-        /// <summary>
-        /// Run given function right away if this function has been called from game's Framework.Update thread, or otherwise run on next Framework.Update call.
-        /// </summary>
-        /// <param name="action">Function to call.</param>
-        /// <returns>Task representing the pending or already completed function.</returns>
+        /// <inheritdoc cref="IFramework.RunOnFrameworkThread(Action)"/>
         public Task RunOnFrameworkThread(Action action)
         {
             if (this.IsInFrameworkUpdateThread)
@@ -175,15 +152,7 @@ namespace Dalamud.Game
             }
         }
 
-        /// <summary>
-        /// Run given function in upcoming Framework.Tick call.
-        /// </summary>
-        /// <typeparam name="T">Return type.</typeparam>
-        /// <param name="func">Function to call.</param>
-        /// <param name="delay">Wait for given timespan before calling this function.</param>
-        /// <param name="delayTicks">Count given number of Framework.Tick calls before calling this function. This takes precedence over delay parameter.</param>
-        /// <param name="cancellationToken">Cancellation token which will prevent the execution of this function if wait conditions are not met.</param>
-        /// <returns>Task representing the pending function.</returns>
+        /// <inheritdoc cref="IFramework.RunOnTick{T}(Func{T}, TimeSpan, int, CancellationToken)"/>
         public Task<T> RunOnTick<T>(Func<T> func, TimeSpan delay = default, int delayTicks = default, CancellationToken cancellationToken = default)
         {
             var tcs = new TaskCompletionSource<T>();
@@ -198,14 +167,7 @@ namespace Dalamud.Game
             return tcs.Task;
         }
 
-        /// <summary>
-        /// Run given function in upcoming Framework.Tick call.
-        /// </summary>
-        /// <param name="action">Function to call.</param>
-        /// <param name="delay">Wait for given timespan before calling this function.</param>
-        /// <param name="delayTicks">Count given number of Framework.Tick calls before calling this function. This takes precedence over delay parameter.</param>
-        /// <param name="cancellationToken">Cancellation token which will prevent the execution of this function if wait conditions are not met.</param>
-        /// <returns>Task representing the pending function.</returns>
+        /// <inheritdoc cref="IFramework.RunOnTick(Action, TimeSpan, int, CancellationToken)"/>
         public Task RunOnTick(Action action, TimeSpan delay = default, int delayTicks = default, CancellationToken cancellationToken = default)
         {
             var tcs = new TaskCompletionSource();

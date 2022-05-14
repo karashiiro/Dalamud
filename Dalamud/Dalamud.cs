@@ -107,7 +107,7 @@ namespace Dalamud
                 Log.Information("[T1] FFXIVClientStructs initialized!");
 
                 // Initialize game subsystem
-                var framework = Service<Framework>.Set();
+                var framework = Service<IFramework, Framework>.Set();
                 Log.Information("[T1] Framework OK!");
 
 #if DEBUG
