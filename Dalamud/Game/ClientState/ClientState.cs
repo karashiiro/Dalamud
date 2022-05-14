@@ -27,7 +27,7 @@ namespace Dalamud.Game.ClientState
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class ClientState : IDisposable
+    public sealed class ClientState : IDisposable, IClientState
     {
         private readonly ClientStateAddressResolver address;
         private readonly Hook<SetupTerritoryTypeDelegate> setupTerritoryTypeHook;
@@ -82,69 +82,43 @@ namespace Dalamud.Game.ClientState
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate IntPtr SetupTerritoryTypeDelegate(IntPtr manager, ushort terriType);
 
-        /// <summary>
-        /// Event that gets fired when the current Territory changes.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.TerritoryChanged"/>
         public event EventHandler<ushort> TerritoryChanged;
 
-        /// <summary>
-        /// Event that fires when a character is logging in.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.Login"/>
         public event EventHandler Login;
 
-        /// <summary>
-        /// Event that fires when a character is logging out.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.Logout"/>
         public event EventHandler Logout;
 
-        /// <summary>
-        /// Event that fires when a character is entering PvP.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.EnterPvP"/>
         public event System.Action EnterPvP;
 
-        /// <summary>
-        /// Event that fires when a character is leaving PvP.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.LeavePvP"/>
         public event System.Action LeavePvP;
 
-        /// <summary>
-        /// Event that gets fired when a duty is ready.
-        /// </summary>
-        public event EventHandler<Lumina.Excel.GeneratedSheets.ContentFinderCondition> CfPop;
+        /// <inheritdoc cref="IClientState.CfPop"/>
+        public event EventHandler<ContentFinderCondition> CfPop;
 
-        /// <summary>
-        /// Gets the language of the client.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.ClientLanguage"/>
         public ClientLanguage ClientLanguage { get; }
 
-        /// <summary>
-        /// Gets the current Territory the player resides in.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.TerritoryType"/>
         public ushort TerritoryType { get; private set; }
 
-        /// <summary>
-        /// Gets the local player character, if one is present.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.LocalPlayer"/>
         public PlayerCharacter? LocalPlayer => Service<ObjectTable>.Get()[0] as PlayerCharacter;
 
-        /// <summary>
-        /// Gets the content ID of the local character.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.LocalContentId"/>
         public ulong LocalContentId => (ulong)Marshal.ReadInt64(this.address.LocalContentId);
 
-        /// <summary>
-        /// Gets a value indicating whether a character is logged in.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.IsLoggedIn"/>
         public bool IsLoggedIn { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether or not the user is playing PvP.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.IsPvP"/>
         public bool IsPvP { get; private set; }
 
-        /// <summary>
-        /// Enable this module.
-        /// </summary>
+        /// <inheritdoc cref="IClientState.Enable"/>
         public void Enable()
         {
             Service<Conditions.Condition>.Get().Enable();

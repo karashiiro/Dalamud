@@ -170,7 +170,7 @@ namespace Dalamud
 
                 Log.Information("[T2] Data OK!");
 
-                var clientState = Service<ClientState>.Set();
+                var clientState = Service<IClientState, ClientState>.Set();
                 Log.Information("[T2] CS OK!");
 
                 var localization = Service<Localization>.Set(new Localization(Path.Combine(this.AssetDirectory.FullName, "UIRes", "loc", "dalamud"), "dalamud_"));
