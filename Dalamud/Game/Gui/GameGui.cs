@@ -67,7 +67,7 @@ namespace Dalamud.Game.Gui
             Service<ToastGui>.Set();
             Service<FlyTextGui>.Set();
             Service<ContextMenu>.Set();
-            Service<DtrBar>.Set();
+            Service<IDtrBar, DtrBar>.Set();
 
             this.setGlobalBgmHook = new Hook<SetGlobalBgmDelegate>(this.address.SetGlobalBgm, this.HandleSetGlobalBgmDetour);
 
