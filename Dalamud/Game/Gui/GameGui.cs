@@ -65,7 +65,7 @@ namespace Dalamud.Game.Gui
             Service<IChatGui, ChatGui>.Set(new ChatGui(this.address.ChatManager));
             Service<IPartyFinderGui, PartyFinderGui>.Set();
             Service<ToastGui>.Set();
-            Service<FlyTextGui>.Set();
+            Service<IFlyTextGui, FlyTextGui>.Set();
             Service<ContextMenu>.Set();
             Service<IDtrBar, DtrBar>.Set();
 

@@ -16,7 +16,7 @@ namespace Dalamud.Game.Gui.FlyText
     /// </summary>
     [PluginInterface]
     [InterfaceVersion("1.0")]
-    public sealed class FlyTextGui : IDisposable
+    public sealed class FlyTextGui : IDisposable, IFlyTextGui
     {
         /// <summary>
         /// The native function responsible for adding fly text to the UI. See <see cref="FlyTextGuiAddressResolver.AddFlyText"/>.
@@ -93,9 +93,7 @@ namespace Dalamud.Game.Gui.FlyText
             uint offsetStrMax,
             int unknown);
 
-        /// <summary>
-        /// The FlyText event that can be subscribed to.
-        /// </summary>
+        /// <inheritdoc cref="IFlyTextGui.FlyTextCreated"/>
         public event OnFlyTextCreatedDelegate? FlyTextCreated;
 
         private Dalamud Dalamud { get; }
@@ -110,17 +108,7 @@ namespace Dalamud.Game.Gui.FlyText
             this.createFlyTextHook.Dispose();
         }
 
-        /// <summary>
-        /// Displays a fly text in-game on the local player.
-        /// </summary>
-        /// <param name="kind">The FlyTextKind. See <see cref="FlyTextKind"/>.</param>
-        /// <param name="actorIndex">The index of the actor to place flytext on. Indexing unknown. 1 places flytext on local player.</param>
-        /// <param name="val1">Value1 passed to the native flytext function.</param>
-        /// <param name="val2">Value2 passed to the native flytext function. Seems unused.</param>
-        /// <param name="text1">Text1 passed to the native flytext function.</param>
-        /// <param name="text2">Text2 passed to the native flytext function.</param>
-        /// <param name="color">Color passed to the native flytext function. Changes flytext color.</param>
-        /// <param name="icon">Icon ID passed to the native flytext function. Only displays with select FlyTextKind.</param>
+        /// <inheritdoc cref="IFlyTextGui.AddFlyText"/>
         public unsafe void AddFlyText(FlyTextKind kind, uint actorIndex, uint val1, uint val2, SeString text1, SeString text2, uint color, uint icon)
         {
             // Known valid flytext region within the atk arrays
