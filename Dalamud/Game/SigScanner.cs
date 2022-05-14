@@ -92,7 +92,13 @@ namespace Dalamud.Game
 
         private IntPtr TextSectionTop => this.TextSectionBase + this.TextSectionSize;
 
-        /// <inheritdoc cref="ISigScanner.Scan"/>
+        /// <summary>
+        /// Scan memory for a signature.
+        /// </summary>
+        /// <param name="baseAddress">The base address to scan from.</param>
+        /// <param name="size">The amount of bytes to scan.</param>
+        /// <param name="signature">The signature to search for.</param>
+        /// <returns>The found offset.</returns>
         public static IntPtr Scan(IntPtr baseAddress, int size, string signature)
         {
             var (needle, mask) = ParseSignature(signature);
@@ -102,7 +108,14 @@ namespace Dalamud.Game
             return baseAddress + index;
         }
 
-        /// <inheritdoc cref="ISigScanner.TryScan"/>
+        /// <summary>
+        /// Try scanning memory for a signature.
+        /// </summary>
+        /// <param name="baseAddress">The base address to scan from.</param>
+        /// <param name="size">The amount of bytes to scan.</param>
+        /// <param name="signature">The signature to search for.</param>
+        /// <param name="result">The offset, if found.</param>
+        /// <returns>true if the signature was found.</returns>
         public static bool TryScan(IntPtr baseAddress, int size, string signature, out IntPtr result)
         {
             try
