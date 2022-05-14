@@ -159,7 +159,7 @@ namespace Dalamud
 
                 try
                 {
-                    Service<DataManager>.Set().Initialize(this.AssetDirectory.FullName);
+                    Service<IDataManager, DataManager>.Set().Initialize(this.AssetDirectory.FullName);
                 }
                 catch (Exception e)
                 {
