@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
-using Dalamud.Data;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
 using Lumina.Excel.GeneratedSheets;
@@ -17,6 +15,17 @@ namespace Dalamud.Game.Text.SeStringHandling;
 /// </summary>
 public class SeString
 {
+    /// <summary>
+    /// Gets the Lumina instance to use for any necessary data lookups.
+    /// </summary>
+    private static IExcelManager? DataResolver;
+
+    public static void Initialize(IExcelManager excelManager)
+    {
+        DataResolver = excelManager;
+        Payload.Initialize(excelManager);
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SeString"/> class.
     /// Creates a new SeString from an ordered list of payloads.
@@ -166,10 +175,9 @@ public class SeString
     /// <param name="kind">The kind of item to link.</param>
     /// <param name="displayNameOverride">An optional name override to display, instead of the actual item name.</param>
     /// <returns>An SeString containing all the payloads necessary to display an item link in the chat log.</returns>
-    public static SeString CreateItemLink(uint itemId, ItemPayload.ItemKind kind = ItemPayload.ItemKind.Normal, string? displayNameOverride = null)
+    public static SeString CreateItemLink(
+        uint itemId, ItemPayload.ItemKind kind = ItemPayload.ItemKind.Normal, string? displayNameOverride = null)
     {
-        var data = Service<DataManager>.Get();
-
         var displayName = displayNameOverride;
         if (displayName == null)
         {
@@ -178,10 +186,10 @@ public class SeString
                 case ItemPayload.ItemKind.Normal:
                 case ItemPayload.ItemKind.Collectible:
                 case ItemPayload.ItemKind.Hq:
-                    displayName = data.GetExcelSheet<Item>()?.GetRow(itemId)?.Name;
+                    displayName = DataResolver.GetExcelSheet<Item>()?.GetRow(itemId)?.Name;
                     break;
                 case ItemPayload.ItemKind.EventItem:
-                    displayName = data.GetExcelSheet<EventItem>()?.GetRow(itemId)?.Name;
+                    displayName = DataResolver.GetExcelSheet<EventItem>()?.GetRow(itemId)?.Name;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
@@ -265,7 +273,8 @@ public class SeString
     /// <param name="yCoord">The human-readable y-coordinate for this link.</param>
     /// <param name="fudgeFactor">An optional offset to account for rounding and truncation errors; it is best to leave this untouched in most cases.</param>
     /// <returns>An SeString containing all of the payloads necessary to display a map link in the chat log.</returns>
-    public static SeString CreateMapLink(uint territoryId, uint mapId, float xCoord, float yCoord, float fudgeFactor = 0.05f)
+    public static SeString CreateMapLink(
+        uint territoryId, uint mapId, float xCoord, float yCoord, float fudgeFactor = 0.05f)
     {
         var mapPayload = new MapLinkPayload(territoryId, mapId, xCoord, yCoord, fudgeFactor);
         var nameString = $"{mapPayload.PlaceName} {mapPayload.CoordinateString}";
@@ -293,13 +302,11 @@ public class SeString
     /// <returns>An SeString containing all of the payloads necessary to display a map link in the chat log.</returns>
     public static SeString? CreateMapLink(string placeName, float xCoord, float yCoord, float fudgeFactor = 0.05f)
     {
-        var data = Service<DataManager>.Get();
+        var mapSheet = DataResolver.GetExcelSheet<Map>();
 
-        var mapSheet = data.GetExcelSheet<Map>();
-
-        var matches = data.GetExcelSheet<PlaceName>()
-                          .Where(row => row.Name.ToString().ToLowerInvariant() == placeName.ToLowerInvariant())
-                          .ToArray();
+        var matches = DataResolver.GetExcelSheet<PlaceName>()
+                                  .Where(row => row.Name.ToString().ToLowerInvariant() == placeName.ToLowerInvariant())
+                                  .ToArray();
 
         foreach (var place in matches)
         {

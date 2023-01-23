@@ -80,7 +80,7 @@ public class UIGlowPayload : Payload
     /// The value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public UIColor UIColor => this.color ??= this.DataResolver.GetExcelSheet<UIColor>().GetRow(this.colorKey);
+    public UIColor UIColor => this.color ??= DataResolver.GetExcelSheet<UIColor>().GetRow(this.colorKey);
 
     /// <inheritdoc/>
     public override string ToString()

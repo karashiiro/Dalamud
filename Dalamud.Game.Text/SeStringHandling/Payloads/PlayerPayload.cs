@@ -47,7 +47,7 @@ public class PlayerPayload : Payload
     /// Value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public World World => this.world ??= this.DataResolver.GetExcelSheet<World>().GetRow(this.serverId);
+    public World World => this.world ??= DataResolver.GetExcelSheet<World>().GetRow(this.serverId);
 
     /// <summary>
     /// Gets or sets the player's displayed name.  This does not contain the server name.

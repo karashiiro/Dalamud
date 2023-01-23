@@ -148,7 +148,7 @@ public class ItemPayload : Payload
                 return null;
             }
 
-            this.item ??= this.DataResolver.GetExcelSheet<Item>()!.GetRow(this.ItemId);
+            this.item ??= DataResolver.GetExcelSheet<Item>()!.GetRow(this.ItemId);
             return this.item;
         }
     }

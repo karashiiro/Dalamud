@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
-using Dalamud.Data;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Newtonsoft.Json;
 using Serilog;
@@ -23,6 +22,16 @@ namespace Dalamud.Game.Text.SeStringHandling;
 /// </summary>
 public abstract partial class Payload
 {
+    /// <summary>
+    /// Gets the Lumina instance to use for any necessary data lookups.
+    /// </summary>
+    private static IExcelManager? DataResolverStatic;
+
+    internal static void Initialize(IExcelManager excelManager)
+    {
+        DataResolverStatic = excelManager;
+    }
+    
     // private for now, since subclasses shouldn't interact with this.
     // To force-invalidate it, Dirty can be set to true
     private byte[] encodedData;
@@ -31,7 +40,7 @@ public abstract partial class Payload
     /// Gets the Lumina instance to use for any necessary data lookups.
     /// </summary>
     [JsonIgnore]
-    public DataManager DataResolver => Service<DataManager>.Get();
+    public IExcelManager? DataResolver => DataResolverStatic;
 
     /// <summary>
     /// Gets the type of this payload.

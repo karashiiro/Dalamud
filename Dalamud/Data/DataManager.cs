@@ -4,7 +4,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-
+using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Internal;
 using Dalamud.IoC;
 using Dalamud.IoC.Internal;
@@ -27,7 +28,7 @@ namespace Dalamud.Data;
 [PluginInterface]
 [InterfaceVersion("1.0")]
 [ServiceManager.BlockingEarlyLoadedService]
-public sealed class DataManager : IDisposable, IServiceType
+public sealed class DataManager : IDisposable, IServiceType, IExcelManager
 {
     private const string IconFileFormat = "ui/icon/{0:D3}000/{1}{2:D6}.tex";
 
@@ -124,6 +125,8 @@ public sealed class DataManager : IDisposable, IServiceType
         {
             Log.Error(ex, "Could not download data.");
         }
+
+        SeString.Initialize(this);
     }
 
     /// <summary>

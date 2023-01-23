@@ -44,7 +44,7 @@ public class QuestPayload : Payload
     /// The value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public Quest Quest => this.quest ??= this.DataResolver.GetExcelSheet<Quest>().GetRow(this.questId);
+    public Quest Quest => this.quest ??= DataResolver.GetExcelSheet<Quest>().GetRow(this.questId);
 
     /// <inheritdoc />
     public override string ToString()

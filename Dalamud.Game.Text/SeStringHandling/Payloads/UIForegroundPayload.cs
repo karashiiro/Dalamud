@@ -55,7 +55,7 @@ public class UIForegroundPayload : Payload
     /// The value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public UIColor UIColor => this.color ??= this.DataResolver.GetExcelSheet<UIColor>().GetRow(this.colorKey);
+    public UIColor UIColor => this.color ??= DataResolver.GetExcelSheet<UIColor>().GetRow(this.colorKey);
 
     /// <summary>
     /// Gets or sets the color key used as a lookup in the UIColor table for this foreground color.

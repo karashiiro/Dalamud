@@ -77,7 +77,7 @@ public class MapLinkPayload : Payload
     /// The value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public Map Map => this.map ??= this.DataResolver.GetExcelSheet<Map>().GetRow(this.mapId);
+    public Map Map => this.map ??= DataResolver.GetExcelSheet<Map>().GetRow(this.mapId);
 
     /// <summary>
     /// Gets the TerritoryType specified for this map link.
@@ -86,7 +86,7 @@ public class MapLinkPayload : Payload
     /// The value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public TerritoryType TerritoryType => this.territoryType ??= this.DataResolver.GetExcelSheet<TerritoryType>().GetRow(this.territoryTypeId);
+    public TerritoryType TerritoryType => this.territoryType ??= DataResolver.GetExcelSheet<TerritoryType>().GetRow(this.territoryTypeId);
 
     /// <summary>
     /// Gets the internal x-coordinate for this map position.

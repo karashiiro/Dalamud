@@ -44,7 +44,7 @@ public class StatusPayload : Payload
     /// The value is evaluated lazily and cached.
     /// </remarks>
     [JsonIgnore]
-    public Status Status => this.status ??= this.DataResolver.GetExcelSheet<Status>().GetRow(this.statusId);
+    public Status Status => this.status ??= DataResolver.GetExcelSheet<Status>().GetRow(this.statusId);
 
     /// <inheritdoc/>
     public override string ToString()
