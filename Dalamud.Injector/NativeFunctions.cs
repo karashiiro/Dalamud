@@ -11,6 +11,7 @@ namespace Dalamud.Injector
         /// <summary>
         /// MB_* from winuser.
         /// </summary>
+        [Flags]
         public enum MessageBoxType : uint
         {
             /// <summary>
