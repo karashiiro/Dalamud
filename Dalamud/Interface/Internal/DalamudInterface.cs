@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 
 using CheapLoc;
 using Dalamud.Configuration.Internal;
+using Dalamud.Fools23;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Gui;
 using Dalamud.Game.Internal;
@@ -61,6 +62,7 @@ internal class DalamudInterface : IDisposable, IServiceType
     private readonly TitleScreenMenuWindow titleScreenMenuWindow;
     private readonly ProfilerWindow profilerWindow;
     private readonly BranchSwitcherWindow branchSwitcherWindow;
+    private readonly TippyGameScene tippyGameWindow;
 
     private readonly TextureWrap logoTexture;
     private readonly TextureWrap tsmLogoTexture;
@@ -108,6 +110,7 @@ internal class DalamudInterface : IDisposable, IServiceType
         this.titleScreenMenuWindow = new TitleScreenMenuWindow() { IsOpen = false };
         this.profilerWindow = new ProfilerWindow() { IsOpen = false };
         this.branchSwitcherWindow = new BranchSwitcherWindow() { IsOpen = false };
+        this.tippyGameWindow = new TippyGameScene() { IsOpen = true };
 
         this.WindowSystem.AddWindow(this.changelogWindow);
         this.WindowSystem.AddWindow(this.colorDemoWindow);
@@ -124,6 +127,7 @@ internal class DalamudInterface : IDisposable, IServiceType
         this.WindowSystem.AddWindow(this.titleScreenMenuWindow);
         this.WindowSystem.AddWindow(this.profilerWindow);
         this.WindowSystem.AddWindow(this.branchSwitcherWindow);
+        this.WindowSystem.AddWindow(this.tippyGameWindow);
 
         ImGuiManagedAsserts.AssertsEnabled = configuration.AssertsEnabledAtStartup;
         this.isImGuiDrawDevMenu = this.isImGuiDrawDevMenu || configuration.DevBarOpenAtStartup;
