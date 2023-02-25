@@ -89,6 +89,9 @@ public class TippyGameScene : Window
 
                 this.objects.Add(new TgPlayer());
                 this.objects.Add(new TgIntroTippy());
+
+                // Play intro
+                this.State = TgGameState.Intro;
                 break;
             case TgGameState.Intro:
                 break;
