@@ -58,7 +58,11 @@ public class TippyGameScene : Window
             if (ImGui.BeginMenu("Debug"))
             {
                 ImGui.MenuItem("Draw collision", string.Empty, ref this.drawCollision);
+
+                ImGui.EndMenu();
             }
+
+            ImGui.EndMenuBar();
         }
 
         foreach (var tgObject in this.objects)
