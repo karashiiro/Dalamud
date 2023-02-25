@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using System.Numerics;
 using Dalamud.Interface.Windowing;
 
 using ImGuiNET;
@@ -9,13 +9,17 @@ namespace Dalamud.Fools23;
 public class TippyGameScene : Window
 {
     private List<TgObject> objects = new();
-    
+
     private TgTexturePile pile = new();
 
     private bool drawCollision = true;
 
-    public TippyGameScene() 
-        : base("Tippy Game", ImGuiWindowFlags.None, true) { }
+    public TippyGameScene()
+        : base("Tippy Game", ImGuiWindowFlags.NoResize, true)
+    {
+        this.Size = new Vector2(800, 400);
+        this.SizeCondition = ImGuiCond.Always;
+    }
 
     public override void Draw()
     {
