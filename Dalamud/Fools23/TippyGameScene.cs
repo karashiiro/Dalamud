@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+
 using Dalamud.Fools23.Objects;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
@@ -69,9 +70,9 @@ public class TippyGameScene : Window
 
         this.UpdateTimeline();
 
-        // Compute time delta
+        // Compute time delta in seconds
         var sinceStart = this.MsSinceStart;
-        var dt = this.LastUpdate - sinceStart;
+        var dt = 0.001f * (sinceStart - this.LastUpdate);
         this.LastUpdate = sinceStart;
 
         foreach (var tgObject in this.objects)
