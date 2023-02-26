@@ -15,6 +15,7 @@ public enum TgGameState
 {
     Init,
     Intro,
+    GameOver,
 }
 
 public class TippyGameScene : Window
@@ -23,6 +24,7 @@ public class TippyGameScene : Window
 
     private TgTexturePile pile = new();
     private Stopwatch clock = new();
+    private Vector2 viewport = new(800, 400);
 
     private bool drawCollision = true;
 
@@ -30,10 +32,12 @@ public class TippyGameScene : Window
 
     public long MsSinceStart => this.clock.ElapsedMilliseconds;
 
+    public long LastUpdate { get; set; }
+
     public TippyGameScene()
         : base("Tippy Game", ImGuiWindowFlags.NoResize, true)
     {
-        this.Size = new Vector2(800, 400);
+        this.Size = this.viewport;
         this.SizeCondition = ImGuiCond.Always;
     }
 
@@ -65,13 +69,30 @@ public class TippyGameScene : Window
             ImGui.EndMenuBar();
         }
 
-        foreach (var tgObject in this.objects)
+        // Compute time delta
+        var sinceStart = this.MsSinceStart;
+        var dt = this.LastUpdate - sinceStart;
+        this.LastUpdate = sinceStart;
+
+        foreach (var tgObject in this.objects.Where(o => o.IsInViewport(this.viewport)))
         {
             tgObject.Draw();
-        }
+            tgObject.Update(dt);
 
-        // TODO: tick updates at constant rate
-        // TODO: check collisions, draw if enabled, call trigger, move out if applicable
+            // TODO: This might need to be indexed, but that can come when it comes
+            foreach (var otherObject in this.objects.Where(o => !ReferenceEquals(o, tgObject)))
+            {
+                if (tgObject.DidCollideWith(otherObject))
+                {
+                    tgObject.OnCollisionTrigger(otherObject, this);
+                }
+            }
+        }
+    }
+
+    public void GameOver()
+    {
+        this.State = TgGameState.GameOver;
     }
 
     public T? GetObj<T>() where T : TgObject
@@ -94,6 +115,8 @@ public class TippyGameScene : Window
                 this.State = TgGameState.Intro;
                 break;
             case TgGameState.Intro:
+                break;
+            case TgGameState.GameOver:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
