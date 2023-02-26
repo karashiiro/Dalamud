@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-
 using Dalamud.Fools23.Objects;
 using Dalamud.Interface.Windowing;
-
 using ImGuiNET;
 
 namespace Dalamud.Fools23;
@@ -69,14 +67,20 @@ public class TippyGameScene : Window
             ImGui.EndMenuBar();
         }
 
+        this.UpdateTimeline();
+
         // Compute time delta
         var sinceStart = this.MsSinceStart;
         var dt = this.LastUpdate - sinceStart;
         this.LastUpdate = sinceStart;
 
-        foreach (var tgObject in this.objects.Where(o => o.IsInViewport(this.viewport)))
+        foreach (var tgObject in this.objects)
         {
-            tgObject.Draw();
+            if (tgObject.IsInViewport(this.viewport))
+            {
+                tgObject.Draw();
+            }
+
             tgObject.Update(dt);
 
             // TODO: This might need to be indexed, but that can come when it comes
